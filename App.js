@@ -9,7 +9,8 @@ import {
   Platform,
   StyleSheet,
   Text,
-  View
+  View,
+  TouchableHighlight
 } from 'react-native';
 
 type Props = {};
@@ -17,9 +18,16 @@ export default class App extends Component<Props> {
   render() {
     return (
       <View style={styles.container}>
-        <Text>
-        Movie App
-        </Text>
+        <TouchableHighlight style={styles.table} >
+          <Text style={styles.tableText}>
+          Now Playing
+          </Text>
+        </TouchableHighlight>
+        <TouchableHighlight style={styles.table} >
+          <Text style={styles.tableText}>
+          Upcoming Movies
+          </Text>
+        </TouchableHighlight>
       </View>
     );
   }
@@ -31,5 +39,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+    padding: 10,
+  },
+  table: {
+    height: 50,
+    backgroundColor: '#48BBEC',
+    alignSelf: 'stretch',
+    marginTop: 10,
+    justifyContent: 'center',
+  },
+  tableText: {
+    fontSize: 22,
+    color: '#FFF',
+    alignSelf: 'center',
   },
 });
