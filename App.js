@@ -51,11 +51,10 @@ export default class App extends Component<Props> {
   }
   showButton(button){
     if(button === 'Now Playing') {
-      this.setState({mainButton:'Now Playing'})
+      this.setState({mainButton:'Now Playing'}, () => this.movieFetch(this.state.mainButton,1) )
     } else {
-      this.setState({mainButton: 'Upcoming Movies'})
+      this.setState({mainButton: 'Upcoming Movies'}, () => this.movieFetch(this.state.mainButton,1) )
     }
-      this.movieFetch(this.state.mainButton,1) 
   }
 
   renderRow(item) {
@@ -106,7 +105,7 @@ export default class App extends Component<Props> {
           style={styles.table}
           onPress={this.showButton.bind(this,'Upcoming Movies')}
           underlayColor='#ddd' 
-          >
+        >
           <Text style={ this.state.mainButton === 'Upcoming Movies' ? styles.tableTextActive : styles.tableText }>
           Upcoming Movies
           </Text>
