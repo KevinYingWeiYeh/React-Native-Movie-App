@@ -24,16 +24,21 @@ export default class App extends Component<Props> {
     this.state ={ 
       isLoading: true,
       mainButton: 'Now Playing',
-      dataSource: ds.cloneWithRows(['row 1', 'row 2']),
+      dataSource: ds.cloneWithRows([]),
+      playingPage: 1,
+      upcomingPage: 1
     }
+    this.showButton = this.showButton.bind(this)
   }
 
   componentDidMount(){
-    this.movieFetch('Now Playing',1)
+    this.movieFetch(this.state.mainButton,this.state.playingPage)
   }
 
   movieFetch(mainButton, page) {
-    var url = 'https://api.themoviedb.org/3/movie/now_playing?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page='
+    var url = this.state.mainButton === 'Now Playing' 
+        ? 'https://api.themoviedb.org/3/movie/now_playing?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page='
+        : 'https://api.themoviedb.org/3/movie/upcoming?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page='
     return fetch(url + page)
       .then((response) => response.json())
       .then((responseJson) => {
@@ -43,6 +48,14 @@ export default class App extends Component<Props> {
             .cloneWithRows(responseJson.results)
       })
     })
+  }
+  showButton(button){
+    if(button === 'Now Playing') {
+      this.setState({mainButton:'Now Playing'})
+    } else {
+      this.setState({mainButton: 'Upcoming Movies'})
+    }
+      this.movieFetch(this.state.mainButton,1) 
   }
 
   renderRow(item) {
@@ -80,22 +93,34 @@ export default class App extends Component<Props> {
     }
     return (
       <View style={styles.container}>
-        <TouchableHighlight style={styles.table} >
+        <TouchableHighlight 
+          style={styles.table}
+          onPress={this.showButton.bind(this,'Now Playing')}
+          underlayColor='#ddd'
+        >
           <Text style={ this.state.mainButton === 'Now Playing' ? styles.tableTextActive : styles.tableText }>
           Now Playing
           </Text>
         </TouchableHighlight>
-        <TouchableHighlight style={styles.table} >
-          <Text style={styles.tableText}>
+        <TouchableHighlight 
+          style={styles.table}
+          onPress={this.showButton.bind(this,'Upcoming Movies')}
+          underlayColor='#ddd' 
+          >
+          <Text style={ this.state.mainButton === 'Upcoming Movies' ? styles.tableTextActive : styles.tableText }>
           Upcoming Movies
           </Text>
         </TouchableHighlight>
           <ListView
-            style={{marginTop: 5}}
+            style={this.state.mainButton === 'Now Playing' ? {display: 'flex'} : {display: 'none'}}
             dataSource={this.state.dataSource}
             renderRow={this.renderRow.bind(this)} />
-        <Text style={{marginTop: 5}}>
-        <View style={styles.button}>
+          <ListView
+            style={this.state.mainButton === 'Upcoming Movies' ? {display: 'flex'} : {display: 'none'}}
+            dataSource={this.state.dataSource}
+            renderRow={this.renderRow.bind(this)} />
+          <Text style={{marginTop: 5}}>
+          <View style={styles.button}>
           <Text style={styles.tableText}>
             LastPage
           </Text>
@@ -148,7 +173,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   feedText: {
-    fontSize: 22,
+    fontSize: 18,
     color: '#000',
   },
   button: {
