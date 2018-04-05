@@ -33,7 +33,8 @@ export default class App extends Component<Props> {
   }
 
   movieFetch(mainButton, page) {
-    return fetch('https://api.themoviedb.org/3/movie/now_playing?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page=' + page)
+    var url = 'https://api.themoviedb.org/3/movie/now_playing?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page='
+    return fetch(url + page)
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
@@ -80,7 +81,7 @@ export default class App extends Component<Props> {
     return (
       <View style={styles.container}>
         <TouchableHighlight style={styles.table} >
-          <Text style={styles.tableText}>
+          <Text style={ this.state.mainButton === 'Now Playing' ? styles.tableTextActive : styles.tableText }>
           Now Playing
           </Text>
         </TouchableHighlight>
@@ -131,6 +132,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#FFF',
     alignSelf: 'center',
+  },
+  tableTextActive: {
+    fontSize: 22,
+    color: '#000',
+    alignSelf: 'center',
+
   },
   feed: {
     padding : 5,
