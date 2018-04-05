@@ -89,31 +89,22 @@ export default class App extends Component<Props> {
           Upcoming Movies
           </Text>
         </TouchableHighlight>
-        {/*<FlatList
-          style={{paddingTop: 20, borderColor: '#D7D7D7', borderBottomWidth: 1, marginTop: 5}}
-          data={this.state.dataSource}
-          renderItem={({item}) => 
-            <Text style={styles.feed}> 
-              <Image source={{uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + item.poster_path }} style={{ height: 48, width: 48,}} /> 
-              <View style={{
-                paddingLeft: 20
-              }}>
-              <Text style={styles.feedText}>
-                {item.title}
-              </Text>
-              <Text >
-                Popularity: {Math.round(item.popularity)}
-              </Text>
-              </View>
-            </Text>}
-          keyExtractor={(item, index) => index.toString()}
-          />*/}
           <ListView
             style={{marginTop: 5}}
             dataSource={this.state.dataSource}
             renderRow={this.renderRow.bind(this)} />
-        <Text style={{paddingTop: 20}}>
-        end of the Line
+        <Text style={{marginTop: 5}}>
+        <View style={styles.button}>
+          <Text style={styles.tableText}>
+            LastPage
+          </Text>
+        </View>
+        <Text>  </Text>
+        <View  style={styles.button}>
+          <Text style={styles.tableText}>
+            NextPage
+          </Text>
+        </View>
         </Text>
       </View>
     );
@@ -151,5 +142,12 @@ const styles = StyleSheet.create({
   feedText: {
     fontSize: 22,
     color: '#000',
-  }  
+  },
+  button: {
+    height: 50,
+    backgroundColor: '#48BBEC',
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    padding: 10,
+  }
 });
