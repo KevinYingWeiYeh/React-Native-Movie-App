@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     marginTop: 10,
     justifyContent: 'center',
+    borderRadius: 10,
   },
   tableText: {
     fontSize: 22,
@@ -149,5 +150,6 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     justifyContent: 'center',
     padding: 10,
+    borderRadius: 18,
   }
 });
