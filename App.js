@@ -16,7 +16,7 @@ import {
   ListView,
   Navigator,
 } from 'react-native';
-import { Container, Header, Title, Button, Left, Right, Body, Icon } from 'native-base';
+import { Icon } from 'native-base';
 
 
 type Props = {};
@@ -30,36 +30,48 @@ export default class App extends Component<Props> {
       dataSource: ds.cloneWithRows([]),
       playingPage: 1,
       upcomingPage: 1,
-      playingTotalPage: 1
+      playingTotalPage: 0,
+      upcomingTotalPage: 0,
     }
     this.showButton = this.showButton.bind(this);
     this.pageChange = this.pageChange.bind(this);
   }
 
   componentDidMount(){
-    this.movieFetch(this.state.mainButton,this.state.playingPage);
+    this.movieFetch();
   }
 
-  movieFetch(mainButton, page) {
+  movieFetch() {
+    var page = this.state.mainButton === 'Now Playing' ? this.state.playingPage : this.state.upcomingPage
     var url = this.state.mainButton === 'Now Playing' 
         ? 'https://api.themoviedb.org/3/movie/now_playing?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page='
         : 'https://api.themoviedb.org/3/movie/upcoming?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page='
     return fetch(url + page)
       .then((response) => response.json())
       .then((responseJson) => {
-        this.setState({
+        if(this.state.mainButton === 'Now Playing') {
+          this.setState({
           isLoading: false,
           dataSource: this.state.dataSource
-            .cloneWithRows(responseJson.results)
+            .cloneWithRows(responseJson.results),
+          playingTotalPage: responseJson.total_pages
+          })
+        } else {
+          this.setState({
+          isLoading: false,
+          dataSource: this.state.dataSource
+            .cloneWithRows(responseJson.results),
+            upcomingTotalPage: responseJson.total_pages
+          })
+        }
       })
-    })
   }
 
   showButton(button){
     if(button === 'Now Playing') {
-      this.setState({mainButton:'Now Playing'}, () => this.movieFetch(this.state.mainButton,1) )
+      this.setState({mainButton:'Now Playing'}, () => this.movieFetch(this.state.mainButton,this.state.playingPage) )
     } else {
-      this.setState({mainButton: 'Upcoming Movies'}, () => this.movieFetch(this.state.mainButton,1) )
+      this.setState({mainButton: 'Upcoming Movies'}, () => this.movieFetch(this.state.mainButton,this.state.upcomingPage) )
     }
   }
 
@@ -138,7 +150,11 @@ export default class App extends Component<Props> {
               LastPage
             </Text>
           </TouchableHighlight >
-          <Text style={styles.page}> Page: {this.state.playingPage} / {this.state.playingTotalPage}</Text>
+          {
+            this.state.mainButton === 'Now Playing' 
+              ? <Text style={styles.page}> Page: {this.state.playingPage} / {this.state.playingTotalPage}</Text>
+              : <Text style={styles.page}> Page: {this.state.upcomingPage} / {this.state.upcomingTotalPage}</Text>
+          }
           <TouchableHighlight
             style={styles.table}
            >
@@ -195,7 +211,7 @@ const styles = StyleSheet.create({
     height: 50,
     backgroundColor: '#48BBEC',
     alignSelf: 'stretch',
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
     padding: 10,
     borderRadius: 30,
   },
