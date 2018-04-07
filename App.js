@@ -19,7 +19,6 @@ import {
 import { Icon } from 'native-base';
 
 
-type Props = {};
 export default class App extends Component<Props> {
   constructor(props){
     super(props);
@@ -30,8 +29,8 @@ export default class App extends Component<Props> {
       dataSource: ds.cloneWithRows([]),
       playingPage: 1,
       upcomingPage: 1,
-      playingTotalPage: 0,
-      upcomingTotalPage: 0,
+      playingTotalPage: null,
+      upcomingTotalPage: null,
     }
     this.showButton = this.showButton.bind(this);
     this.pageChange = this.pageChange.bind(this);
@@ -42,25 +41,25 @@ export default class App extends Component<Props> {
   }
 
   movieFetch() {
-    var page = this.state.mainButton === 'Now Playing' ? this.state.playingPage : this.state.upcomingPage
-    var url = this.state.mainButton === 'Now Playing' 
+    var page = this.state.mainButton === 'Now Playing' ? this.state.playingPage : this.state.upcomingPage;
+    var url = this.state.mainButton === 'Now Playing'
         ? 'https://api.themoviedb.org/3/movie/now_playing?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page='
-        : 'https://api.themoviedb.org/3/movie/upcoming?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page='
+        : 'https://api.themoviedb.org/3/movie/upcoming?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page=';
     return fetch(url + page)
       .then((response) => response.json())
       .then((responseJson) => {
         if(this.state.mainButton === 'Now Playing') {
           this.setState({
-          isLoading: false,
-          dataSource: this.state.dataSource
-            .cloneWithRows(responseJson.results),
-          playingTotalPage: responseJson.total_pages
+            isLoading: false,
+            dataSource: this.state.dataSource
+              .cloneWithRows(responseJson.results),
+            playingTotalPage: responseJson.total_pages
           })
         } else {
           this.setState({
-          isLoading: false,
-          dataSource: this.state.dataSource
-            .cloneWithRows(responseJson.results),
+            isLoading: false,
+            dataSource: this.state.dataSource
+              .cloneWithRows(responseJson.results),
             upcomingTotalPage: responseJson.total_pages
           })
         }
@@ -69,14 +68,26 @@ export default class App extends Component<Props> {
 
   showButton(button){
     if(button === 'Now Playing') {
-      this.setState({mainButton:'Now Playing'}, () => this.movieFetch(this.state.mainButton,this.state.playingPage) )
+      this.setState({mainButton:'Now Playing'}, () => this.movieFetch() )
     } else {
-      this.setState({mainButton: 'Upcoming Movies'}, () => this.movieFetch(this.state.mainButton,this.state.upcomingPage) )
+      this.setState({mainButton: 'Upcoming Movies'}, () => this.movieFetch() )
     }
   }
 
-  pageChange(page){
-
+  pageChange(state){
+    if(this.state.mainButton === 'Now Playing') {
+      if(this.state.playingPage < this.state.playingTotalPage && state === 'Last') {
+        this.setState({ playingPage: ++this.state.playingPage }, () => this.movieFetch() )
+      } else if(this.state.playingPage > 1 && state === 'Next') {
+        this.setState({playingPage: --this.state.playingPage }, () => this.movieFetch() )
+      }
+    } else {
+        if(this.state.upcomingPage < this.state.upcomingTotalPage && state === 'Last') {
+        this.setState({ upcomingPage: ++this.state.upcomingPage }, () => this.movieFetch() )
+      } else if(this.state.upcomingPage > 1 && state === 'Next') {
+        this.setState({upcomingPage: --this.state.upcomingPage }, () => this.movieFetch() )
+      }
+    }
   }
 
   renderRow(item) {
@@ -102,8 +113,8 @@ export default class App extends Component<Props> {
     )
   }
 
-  render() {
 
+  render() {
     if(this.state.isLoading) {
       return (
         <View style={{
@@ -120,43 +131,53 @@ export default class App extends Component<Props> {
     }
     return (
       <View style={styles.container}>
-        <TouchableHighlight 
-          style={styles.table}
-          onPress={this.showButton.bind(this,'Now Playing')}
-          underlayColor='#ddd'
-        >
-          <Text style={ this.state.mainButton === 'Now Playing' ? styles.tableTextActive : styles.tableText }>
-          Now Playing
-          </Text>
-        </TouchableHighlight>
-        <TouchableHighlight 
-          style={styles.table}
-          onPress={this.showButton.bind(this,'Upcoming Movies')}
-          underlayColor='#ddd' 
-        >
-          <Text style={ this.state.mainButton === 'Upcoming Movies' ? styles.tableTextActive : styles.tableText }>
-          Upcoming Movies
-          </Text>
-        </TouchableHighlight>
+        <View style={{flexDirection:'row', flexWrap:'wrap', width:'100%'}}>
+          <TouchableHighlight 
+            style={ this.state.mainButton === 'Now Playing' ? styles.tableActive : styles.table}
+            onPress={this.showButton.bind(this,'Now Playing')}
+            underlayColor='#ddd'
+          >
+            <Text style={ this.state.mainButton === 'Now Playing' ? styles.tableTextActive : styles.tableText }>
+            Now Playing
+            </Text>
+          </TouchableHighlight>
+          <TouchableHighlight 
+            style={ this.state.mainButton === 'Upcoming Movies' ? styles.tableActive : styles.table}
+            onPress={this.showButton.bind(this,'Upcoming Movies')}
+            underlayColor='#ddd' 
+          >
+            <Text style={ this.state.mainButton === 'Upcoming Movies' ? styles.tableTextActive : styles.tableText }>
+            Upcoming Movies
+            </Text>
+          </TouchableHighlight>
+        </View>
+        // Movie List
         <ListView
           style={{marginTop:5}}
           dataSource={this.state.dataSource}
           renderRow={this.renderRow.bind(this)} />
-          <View style={{flexDirection:'row', flexWrap:'wrap'}}>
+          // NextPage Buttons 
+        <View style={{flexDirection:'row', flexWrap:'wrap', borderColor: '#EEE', borderTopWidth: 1}}>
           <TouchableHighlight
-            style={styles.table}
+            style={styles.button}
+            onPress={this.pageChange.bind(this,'Next')}
+            underlayColor='#ddd'
            >
             <Text style={styles.buttonText}>
               LastPage
             </Text>
           </TouchableHighlight >
-          {
-            this.state.mainButton === 'Now Playing' 
-              ? <Text style={styles.page}> Page: {this.state.playingPage} / {this.state.playingTotalPage}</Text>
-              : <Text style={styles.page}> Page: {this.state.upcomingPage} / {this.state.upcomingTotalPage}</Text>
-          }
+            <Text style={styles.page}>
+            {
+              this.state.mainButton === 'Now Playing' 
+                ? <Text > Page: {this.state.playingPage} / {this.state.playingTotalPage}</Text>
+                : <Text > Page: {this.state.upcomingPage} / {this.state.upcomingTotalPage}</Text>
+            }
+            </Text>
           <TouchableHighlight
-            style={styles.table}
+            style={styles.button}
+            onPress={this.pageChange.bind(this,'Last')}
+            underlayColor='#ddd'
            >
             <Text style={styles.buttonText}>
               NextPage
@@ -164,9 +185,10 @@ export default class App extends Component<Props> {
           </TouchableHighlight >
         </View>
       </View>
-    );
+    )
   }
 }
+  
 
 const styles = StyleSheet.create({
   container: {
@@ -176,22 +198,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5FCFF',
     padding: 10,
   },
-  table: {
+  tableActive: {
+    width: '50%',
     height: 50,
     backgroundColor: '#48BBEC',
     alignSelf: 'stretch',
     marginTop: 10,
     justifyContent: 'center',
-    borderRadius: 10,
+    alignContent: 'center'
   },
-  tableText: {
-    fontSize: 22,
+  table: {
+    width: '50%',
+    height: 50,
+    backgroundColor: '#FFF',
+    alignSelf: 'stretch',
+    marginTop: 10,
+    justifyContent: 'center',
+    alignContent: 'center',
+    borderColor: '#48BBEC',
+    borderWidth: 1,
+  },
+  tableTextActive: {
+    fontSize: 18,
     color: '#FFF',
     alignSelf: 'center',
   },
-  tableTextActive: {
-    fontSize: 22,
-    color: '#000',
+  tableText: {
+    fontSize: 18,
+    color: '#48BBEC',
     alignSelf: 'center',
   },
   feed: {
@@ -208,12 +242,11 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   button: {
-    height: 50,
     backgroundColor: '#48BBEC',
     alignSelf: 'stretch',
     justifyContent: 'space-evenly',
-    padding: 10,
     borderRadius: 30,
+    margin: 5,
   },
   buttonText: {
     alignSelf: 'stretch',
