@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import {
-  Platform,
   StyleSheet,
   Text,
   View,
   TouchableHighlight,
-  ActivityIndicator,
   Image,
-  ListView,
   Modal,
 } from 'react-native';
 import { Icon } from 'native-base';
@@ -20,20 +17,6 @@ export default class Post extends Component<Props> {
   }
 
   render() {
-  	if(this.props.state.item === null) {
-  		return (
-				<View style={{
-          	flex:1,
-          	justifyContent: 'center'
-        	}}
-        >
-          <ActivityIndicator
-            size='large'
-            animating={true}
-          />
-        </View>
-  		)
-  	}
     return (
     <Modal
    		style={styles.container}
@@ -54,10 +37,13 @@ export default class Post extends Component<Props> {
             Close
           </Text>
         </TouchableHighlight>
-      <Image source={{uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + this.props.state.item.poster_path }} style={{ height: '75%', width: '75%',}} /> 
-     	{/*<Image source={{uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + this.props.state.item.backdrop_path }} style={{ height: '40%', width: '40%',}} /> */}
-	      <View>
-		      <Text>
+      <Image  source={{
+  							uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + this.props.state.item.poster_path 
+  						}} 
+  						style={{ 
+  							 alignItems: 'center', justifyContent: 'center'}} /> 
+	      <View style={styles.feed}>
+		      <Text >
 		      	Movie Name: {this.props.state.item.title}
 		      </Text>
 		      <Text>

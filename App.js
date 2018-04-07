@@ -6,7 +6,6 @@
 
 import React, { Component } from 'react';
 import {
-  Platform,
   StyleSheet,
   Text,
   View,
@@ -25,53 +24,57 @@ export default class App extends Component<Props> {
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state ={ 
       isLoading: true,
-      mainButton: 'Now Playing',
+      isPlayingPressed: true,
+      isOffLine: false,
+      modalVisible: false,
       dataSource: ds.cloneWithRows([]),
       playingPage: 1,
       upcomingPage: 1,
       playingTotalPage: null,
       upcomingTotalPage: null,
-      modalVisible: false,
       item: {},
     }
-    this.showButton = this.showButton.bind(this);
+    this.pressTable = this.pressTable.bind(this);
     this.pageChange = this.pageChange.bind(this);
     this.pressRow = this.pressRow.bind(this);
     this.pressClose = this.pressClose.bind(this);
   }
 
   componentDidMount(){
-    this.fetchGeners();
+    this.genersFetch();
     this.movieFetch();
   }
 
-  fetchGeners() {
-    var url = 'https://api.themoviedb.org/3/genre/movie/list?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-U'
+  genersFetch() {
+    const url = 'https://api.themoviedb.org/3/genre/movie/list?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-U'
     return fetch(url)
       .then((response) => response.json())
       .then((responseJson) => {
-        var data = responseJson.genres
-        var genres = {}
-        genres = data.reduce((a,e) => {
+        let genres = {};
+        genres = responseJson.genres.reduce((a,e) => {
           a[e.id] = e.name;
           return a;
-        },{})
-        this.setState({
-          genres : genres
-        })
+        },{});
+        this.setState({ genres : genres });
       })
-      .catch((err) => console.log('err',err))
+      .catch(() => this.setState({isOffLine: true})) // Display no internet when fetch went wrong 
+  }
+
+  pagesFetch() {
+    let nowPlaying = 'https://api.themoviedb.org/3/movie/now_playing?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page=1';
+    let upcoming = 'https://api.themoviedb.org/3/movie/upcoming?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page=';
+  
   }
 
   movieFetch() {
-    var page = this.state.mainButton === 'Now Playing' ? this.state.playingPage : this.state.upcomingPage;
-    var url = this.state.mainButton === 'Now Playing'
-        ? 'https://api.themoviedb.org/3/movie/now_playing?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page='
-        : 'https://api.themoviedb.org/3/movie/upcoming?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page=';
+    var page = this.state.isPlayingPressed ? this.state.playingPage : this.state.upcomingPage;
+    var url = this.state.isPlayingPressed
+      ? 'https://api.themoviedb.org/3/movie/now_playing?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page='
+      : 'https://api.themoviedb.org/3/movie/upcoming?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page=';
     return fetch(url + page)
       .then((response) => response.json())
       .then((responseJson) => {
-        if(this.state.mainButton === 'Now Playing') {
+        if(this.state.isPlayingPressed) {
           this.setState({
             isLoading: false,
             dataSource: this.state.dataSource
@@ -89,12 +92,8 @@ export default class App extends Component<Props> {
       })
   }
 
-  showButton(button){
-    if(button === 'Now Playing') {
-      this.setState({mainButton:'Now Playing'}, () => this.movieFetch() )
-    } else {
-      this.setState({mainButton: 'Upcoming Movies'}, () => this.movieFetch() )
-    }
+  pressTable(){
+    this.setState({isPlayingPressed:!this.state.isPlayingPressed}, () => this.movieFetch())
   }
 
   pressRow(item){
@@ -106,7 +105,7 @@ export default class App extends Component<Props> {
   }
 
   pageChange(state){
-    if(this.state.mainButton === 'Now Playing') {
+    if(this.state.isPlayingPressed) {
       if(this.state.playingPage < this.state.playingTotalPage && state === 'Last') {
         this.setState({ playingPage: ++this.state.playingPage }, () => this.movieFetch() )
       } else if(this.state.playingPage > 1 && state === 'Next') {
@@ -129,24 +128,17 @@ export default class App extends Component<Props> {
             underlayColor='#ddd'
           >
         <View style={styles.feed}>
-            <Image source={{uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + item.poster_path }} style={{ height: 60, width: 60,}} /> 
-            <View style={{
-              paddingLeft: 5,
-              width: '70%'
-            }}>
-              <Text style={styles.feedText}>
-                {item.title}
-              </Text>
-              <Text style={styles.genre}>
-              ({genre})
-              </Text>
-            </View>
-            <View>
-              <Text >
-                <Icon ios='ios-heart' android="md-heart" style={{fontSize: 15, color: 'red'}}/>
-                {Math.round(item.popularity)}
-              </Text>
-            </View>
+          <Image source={{uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + item.poster_path }} style={{ height: 60, width: 60,}} /> 
+          <View style={{paddingLeft: 5, width: '70%'}}>
+            <Text style={styles.feedText}>{item.title}</Text>
+            <Text style={styles.genre}>({genre})</Text>
+          </View>
+          <View>
+            <Text>
+              <Icon ios='ios-heart' android="md-heart" style={{fontSize: 15, color: 'red'}}/>
+              {Math.round(item.popularity)}
+            </Text>
+          </View>
         </View>
       </TouchableHighlight>
     )
@@ -154,50 +146,47 @@ export default class App extends Component<Props> {
 
 
   render() {
+    if(this.state.isOffLine) {
+      return (
+        <View style={{flex:1,justifyContent: 'center'}}>
+          <Text> Unable to connect internet </Text>
+        </View>
+        )
+    }
     if(this.state.isLoading) {
       return (
-        <View style={{
-          flex:1,
-          justifyContent: 'center'
-        }}
-        >
-          <ActivityIndicator
-            size='large'
-            animating={true}
-          />
+        <View style={{flex:1,justifyContent: 'center'}}>
+          <ActivityIndicator size='large' animating={true}/>
         </View>
       )
     }
     return (
-
       <View style={styles.container}>
         <Post state={this.state} close={this.pressClose}/>
         <View style={{flexDirection:'row', flexWrap:'wrap', width:'100%'}}>
           <TouchableHighlight 
-            style={ this.state.mainButton === 'Now Playing' ? styles.tableActive : styles.table}
-            onPress={this.showButton.bind(this,'Now Playing')}
+            style={ this.state.isPlayingPressed ? styles.tableActive : styles.table}
+            onPress={this.pressTable.bind(this)}
             underlayColor='#ddd'
           >
-            <Text style={ this.state.mainButton === 'Now Playing' ? styles.tableTextActive : styles.tableText }>
+            <Text style={ this.state.isPlayingPressed ? styles.tableTextActive : styles.tableText }>
             Now Playing
             </Text>
           </TouchableHighlight>
           <TouchableHighlight 
-            style={ this.state.mainButton === 'Upcoming Movies' ? styles.tableActive : styles.table}
-            onPress={this.showButton.bind(this,'Upcoming Movies')}
+            style={ !this.state.isPlayingPressed ? styles.tableActive : styles.table}
+            onPress={this.pressTable.bind(this)}
             underlayColor='#ddd' 
           >
-            <Text style={ this.state.mainButton === 'Upcoming Movies' ? styles.tableTextActive : styles.tableText }>
+            <Text style={ !this.state.isPlayingPressed ? styles.tableTextActive : styles.tableText }>
             Upcoming Movies
             </Text>
           </TouchableHighlight>
         </View>
-        // Movie List
         <ListView
           style={{marginTop:5}}
           dataSource={this.state.dataSource}
           renderRow={this.renderRow.bind(this)} />
-          // NextPage Buttons 
         <View style={{flexDirection:'row', flexWrap:'wrap', borderColor: '#EEE', borderTopWidth: 1}}>
           <TouchableHighlight
             style={styles.button}
@@ -210,7 +199,7 @@ export default class App extends Component<Props> {
           </TouchableHighlight >
             <Text style={styles.page}>
             {
-              this.state.mainButton === 'Now Playing' 
+              this.state.isPlayingPressed 
                 ? <Text > Page: {this.state.playingPage} / {this.state.playingTotalPage}</Text>
                 : <Text > Page: {this.state.upcomingPage} / {this.state.upcomingTotalPage}</Text>
             }
@@ -300,6 +289,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     fontSize: 15,
     padding: 5,
+    width: '30%'
   },
   genre: {
     fontSize: 13,
