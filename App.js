@@ -57,13 +57,7 @@ export default class App extends Component<Props> {
         },{});
         this.setState({ genres : genres });
       })
-      .catch(() => this.setState({isOffLine: true})) // Display no internet when fetch went wrong 
-  }
-
-  pagesFetch() {
-    let nowPlaying = 'https://api.themoviedb.org/3/movie/now_playing?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page=1';
-    let upcoming = 'https://api.themoviedb.org/3/movie/upcoming?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-US&page=';
-  
+      .catch(() => this.setState({isOffLine: true})) // Display no internet when fetching goes wrong 
   }
 
   movieFetch() {
@@ -90,10 +84,12 @@ export default class App extends Component<Props> {
           })
         }
       })
+      .catch(() => this.setState({isOffLine: true})) // Display no internet when fetching goes wrong 
+
   }
 
   pressTable(){
-    this.setState({isPlayingPressed:!this.state.isPlayingPressed}, () => this.movieFetch())
+    this.setState({isPlayingPressed: !this.state.isPlayingPressed}, () => this.movieFetch())
   }
 
   pressRow(item){
@@ -121,21 +117,22 @@ export default class App extends Component<Props> {
   }
 
   renderRow(item) {
-    var genre = item.genre_ids ? item.genre_ids.map(ele => this.state.genres[ele]).join(', ') : ''
+    const genre = item.genre_ids ? item.genre_ids.map(ele => this.state.genres[ele]).join(', ') : ''
     return (
       <TouchableHighlight 
             onPress={this.pressRow.bind(this,item)}
             underlayColor='#ddd'
           >
         <View style={styles.feed}>
-          <Image source={{uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + item.poster_path }} style={{ height: 60, width: 60,}} /> 
+          <Image source={{uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + item.poster_path }} 
+                 style={{ height: 60, width: 60,}} /> 
           <View style={{paddingLeft: 5, width: '70%'}}>
             <Text style={styles.feedText}>{item.title}</Text>
             <Text style={styles.genre}>({genre})</Text>
           </View>
           <View>
             <Text>
-              <Icon ios='ios-heart' android="md-heart" style={{fontSize: 15, color: 'red'}}/>
+              <Icon ios='ios-eye' android="md-eye" style={{fontSize: 15, color: '#000'}}/>
               {Math.round(item.popularity)}
             </Text>
           </View>

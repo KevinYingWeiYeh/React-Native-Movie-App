@@ -17,6 +17,7 @@ export default class Post extends Component<Props> {
   }
 
   render() {
+  	const item = this.props.state.item;
     return (
     <Modal
    		style={styles.container}
@@ -26,7 +27,7 @@ export default class Post extends Component<Props> {
       onRequestClose={() => {
         alert('Movie detial has been closed.');
       }}>
-      <View style={{marginTop: 22, padding: 10}}>
+      <View style={{marginTop: 22, padding: 5}}>
           <TouchableHighlight
           	style={styles.button}
             underlayColor='#ddd'
@@ -37,22 +38,31 @@ export default class Post extends Component<Props> {
             Close
           </Text>
         </TouchableHighlight>
-      <Image  source={{
-  							uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + this.props.state.item.poster_path 
-  						}} 
-  						style={{ 
-  							 alignItems: 'center', justifyContent: 'center'}} /> 
-	      <View style={styles.feed}>
-		      <Text >
-		      	Movie Name: {this.props.state.item.title}
-		      </Text>
-		      <Text>
-		      	Release Data: {this.props.state.item.release_date}
-		      </Text>
-		      <Text>
-		      	Overview: {this.props.state.item.overview}
-		      </Text>
-	    	</View>
+	      <View style={{flexDirection:'row', flexWrap:'wrap', borderColor: '#EEE', borderTopWidth: 1, borderBottomWidth: 1, padding: 5}}>
+	      <Image  source={{
+	  							uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + item.poster_path 
+	  						}} 
+	  						style={{ height: 200, width: '50%'}} /> 
+					<View style={{backgroundColor: '#EEE', width: '50%'}}>
+						<Text style={styles.titleHeadLine}>
+						{item.title}
+						</Text>
+						<Text style={styles.titleText}>
+							Voter Rate: {item.vote_average === 0 ? 'Not open to rate yet' : item.vote_average}
+						</Text>
+						<Text style={styles.titleText}>
+							Relese Date: {item.release_date}
+						</Text>
+					</View>
+	  		</View>
+	  		<View>
+	  			<Text style={{fontSize: 22}}>
+	  			OverView:
+	  			</Text>
+	  			<Text style={styles.feedText}>
+	  			{item.overview}
+	  			</Text>
+	  		</View>
     	</View>
   	</Modal>
     );
@@ -75,10 +85,26 @@ const styles = StyleSheet.create({
     borderColor: '#D7D7D7',
     borderBottomWidth: 1,
   },
+  titleHeadLine: {
+  	fontSize: 20,
+  	fontWeight: 'bold',
+    color: '#000',
+    padding: 10,
+    textAlign: 'center',	
+  },
+  titleText:{
+  	fontSize: 18,
+    color: '#000',
+    padding: 5,
+    textAlign: 'center',
+  },
   feedText: {
     fontSize: 18,
     color: '#000',
-    paddingBottom: 5,
+    padding: 5,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    width: '100%',
   },
   button: {
     backgroundColor: '#48BBEC',
@@ -91,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFF',
     padding: 10,
-    alignItems: 'center',
+    alignItems: 'stretch',
     alignSelf: 'center',
   },
 });
