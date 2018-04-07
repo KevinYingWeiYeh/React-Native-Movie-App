@@ -14,10 +14,10 @@ import {
   ActivityIndicator,
   Image,
   ListView,
-  Navigator,
+  Modal,
 } from 'react-native';
 import { Icon } from 'native-base';
-
+import Post from './post.js'
 
 export default class App extends Component<Props> {
   constructor(props){
@@ -31,13 +31,36 @@ export default class App extends Component<Props> {
       upcomingPage: 1,
       playingTotalPage: null,
       upcomingTotalPage: null,
+      modalVisible: false,
+      item: {},
     }
     this.showButton = this.showButton.bind(this);
     this.pageChange = this.pageChange.bind(this);
+    this.pressRow = this.pressRow.bind(this);
+    this.pressClose = this.pressClose.bind(this);
   }
 
   componentDidMount(){
+    this.fetchGeners();
     this.movieFetch();
+  }
+
+  fetchGeners() {
+    var url = 'https://api.themoviedb.org/3/genre/movie/list?api_key=cc79bee81cab976b941237e667cd8bdd&language=en-U'
+    return fetch(url)
+      .then((response) => response.json())
+      .then((responseJson) => {
+        var data = responseJson.genres
+        var genres = {}
+        genres = data.reduce((a,e) => {
+          a[e.id] = e.name;
+          return a;
+        },{})
+        this.setState({
+          genres : genres
+        })
+      })
+      .catch((err) => console.log('err',err))
   }
 
   movieFetch() {
@@ -74,6 +97,14 @@ export default class App extends Component<Props> {
     }
   }
 
+  pressRow(item){
+    this.setState({item: item, modalVisible: !this.state.modalVisible})
+  }
+
+  pressClose(){
+    this.setState({modalVisible: !this.state.modalVisible})
+  }
+
   pageChange(state){
     if(this.state.mainButton === 'Now Playing') {
       if(this.state.playingPage < this.state.playingTotalPage && state === 'Last') {
@@ -91,25 +122,33 @@ export default class App extends Component<Props> {
   }
 
   renderRow(item) {
+    var genre = item.genre_ids ? item.genre_ids.map(ele => this.state.genres[ele]).join(', ') : ''
     return (
-      <View style={styles.feed}>
-          <Image source={{uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + item.poster_path }} style={{ height: 48, width: 48,}} /> 
-          <View style={{
-            paddingLeft: 5,
-            width: '70%'
-          }}>
-            <Text style={styles.feedText}>
-              {item.title}
-            </Text>
-            <Text >
-              <Icon ios='ios-heart' android="md-heart" style={{fontSize: 15, color: 'red'}}/>
-              {Math.round(item.popularity)}
-            </Text>
-          </View>
-          <View>
-            <Text style={{textAlign: 'right', color: 'blue'}}> View </Text>
-          </View>
-      </View>
+      <TouchableHighlight 
+            onPress={this.pressRow.bind(this,item)}
+            underlayColor='#ddd'
+          >
+        <View style={styles.feed}>
+            <Image source={{uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + item.poster_path }} style={{ height: 60, width: 60,}} /> 
+            <View style={{
+              paddingLeft: 5,
+              width: '70%'
+            }}>
+              <Text style={styles.feedText}>
+                {item.title}
+              </Text>
+              <Text style={styles.genre}>
+              ({genre})
+              </Text>
+            </View>
+            <View>
+              <Text >
+                <Icon ios='ios-heart' android="md-heart" style={{fontSize: 15, color: 'red'}}/>
+                {Math.round(item.popularity)}
+              </Text>
+            </View>
+        </View>
+      </TouchableHighlight>
     )
   }
 
@@ -130,7 +169,9 @@ export default class App extends Component<Props> {
       )
     }
     return (
+
       <View style={styles.container}>
+        <Post state={this.state} close={this.pressClose}/>
         <View style={{flexDirection:'row', flexWrap:'wrap', width:'100%'}}>
           <TouchableHighlight 
             style={ this.state.mainButton === 'Now Playing' ? styles.tableActive : styles.table}
@@ -260,4 +301,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     padding: 5,
   },
+  genre: {
+    fontSize: 13,
+    color: '#999',
+  }
 });
