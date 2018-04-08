@@ -94,8 +94,10 @@ export default class App extends Component<Props> {
 
   }
 
-  pressTable(){
-    this.setState({isPlayingPressed: !this.state.isPlayingPressed}, () => this.movieFetch())
+  pressTable(key){
+    if(key === this.state.isPlayingPressed) {
+      this.setState({isPlayingPressed: !this.state.isPlayingPressed}, () => this.movieFetch())
+    }
   }
 
   pressRow(item){
@@ -134,7 +136,7 @@ export default class App extends Component<Props> {
                  style={{ height: 60, width: 60,}} /> 
           <View style={{paddingLeft: 5, width: '70%'}}>
             <Text style={styles.feedText}>{item.title}</Text>
-            <Text style={styles.genre}>({genre})</Text>
+            <Text style={styles.genre}>{genre}</Text>
           </View>
           <View>
             <Text>
@@ -169,7 +171,7 @@ export default class App extends Component<Props> {
         <View style={{flexDirection:'row', flexWrap:'wrap', width:'100%'}}>
           <TouchableHighlight 
             style={ this.state.isPlayingPressed ? styles.tableActive : styles.table}
-            onPress={this.pressTable.bind(this)}
+            onPress={this.pressTable.bind(this,false)}
             underlayColor='#ddd'
           >
             <Text style={ this.state.isPlayingPressed ? styles.tableTextActive : styles.tableText }>
@@ -178,7 +180,7 @@ export default class App extends Component<Props> {
           </TouchableHighlight>
           <TouchableHighlight 
             style={ !this.state.isPlayingPressed ? styles.tableActive : styles.table}
-            onPress={this.pressTable.bind(this)}
+            onPress={this.pressTable.bind(this,true)}
             underlayColor='#ddd' 
           >
             <Text style={ !this.state.isPlayingPressed ? styles.tableTextActive : styles.tableText }>
@@ -187,12 +189,11 @@ export default class App extends Component<Props> {
           </TouchableHighlight>
         </View>
         {
-          this.state.dataSource.length === 0 
-          ? <Text style={{textAlign: 'center'}}>This page is empity</Text>
-          : <ListView
-              style={{marginTop:5}}
-              dataSource={this.state.dataSource}
-              renderRow={this.renderRow.bind(this)} />
+          <ListView
+            style={{marginTop:5}}
+            enableEmptySections={true}
+            dataSource={this.state.dataSource}
+            renderRow={this.renderRow.bind(this)} />
         }
         <View style={{flexDirection:'row', flexWrap:'wrap', borderColor: '#EEE', borderTopWidth: 1}}>
           <TouchableHighlight
