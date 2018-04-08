@@ -6,7 +6,6 @@
 
 import React, { Component } from 'react';
 import {
-  StyleSheet,
   Text,
   View,
   TouchableHighlight,
@@ -17,6 +16,8 @@ import {
 } from 'react-native';
 import { Icon } from 'native-base';
 import Post from './post.js'
+import styles from './styles.js'
+import renderRow from './renderRow.js'
 
 export default class App extends Component<Props> {
   constructor(props){
@@ -91,7 +92,6 @@ export default class App extends Component<Props> {
         }
       })
       .catch(() => this.setState({isOffLine: true})) // Display no internet when fetching goes wrong 
-
   }
 
   pressTable(key){
@@ -124,32 +124,6 @@ export default class App extends Component<Props> {
     }
   }
 
-  renderRow(item) {
-    const genre = item.genre_ids && this.state.genres ? item.genre_ids.map(ele => this.state.genres[ele]).join(', ') : ''
-    return (
-      <TouchableHighlight 
-            onPress={this.pressRow.bind(this,item)}
-            underlayColor='#ddd'
-          >
-        <View style={styles.feed}>
-          <Image source={{uri: 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + item.poster_path }} 
-                 style={{ height: 60, width: 60,}} /> 
-          <View style={{paddingLeft: 5, width: '70%'}}>
-            <Text style={styles.feedText}>{item.title}</Text>
-            <Text style={styles.genre}>{genre}</Text>
-          </View>
-          <View>
-            <Text>
-              <Icon ios='ios-eye' android="md-eye" style={{fontSize: 15, color: '#000'}}/>
-              {Math.round(item.popularity)}
-            </Text>
-          </View>
-        </View>
-      </TouchableHighlight>
-    )
-  }
-
-
   render() {
     if(this.state.isOffLine) {
       return (
@@ -170,31 +144,29 @@ export default class App extends Component<Props> {
         <Post state={this.state} close={this.pressClose}/>
         <View style={{flexDirection:'row', flexWrap:'wrap', width:'100%'}}>
           <TouchableHighlight 
-            style={ this.state.isPlayingPressed ? styles.tableActive : styles.table}
-            onPress={this.pressTable.bind(this,false)}
+            style={ !this.state.isPlayingPressed ? styles.tableActive : styles.table}
+            onPress={this.pressTable.bind(this,false)} 
             underlayColor='#ddd'
           >
-            <Text style={ this.state.isPlayingPressed ? styles.tableTextActive : styles.tableText }>
+            <Text style={ !this.state.isPlayingPressed ? styles.tableTextActive : styles.tableText }>
             Now Playing
             </Text>
           </TouchableHighlight>
           <TouchableHighlight 
-            style={ !this.state.isPlayingPressed ? styles.tableActive : styles.table}
+            style={ this.state.isPlayingPressed ? styles.tableActive : styles.table}
             onPress={this.pressTable.bind(this,true)}
             underlayColor='#ddd' 
           >
-            <Text style={ !this.state.isPlayingPressed ? styles.tableTextActive : styles.tableText }>
+            <Text style={ this.state.isPlayingPressed ? styles.tableTextActive : styles.tableText }>
             Upcoming Movies
             </Text>
           </TouchableHighlight>
         </View>
-        {
           <ListView
             style={{marginTop:5}}
             enableEmptySections={true}
             dataSource={this.state.dataSource}
-            renderRow={this.renderRow.bind(this)} />
-        }
+            renderRow={renderRow.bind(this)} />
         <View style={{flexDirection:'row', flexWrap:'wrap', borderColor: '#EEE', borderTopWidth: 1}}>
           <TouchableHighlight
             style={styles.button}
@@ -227,80 +199,3 @@ export default class App extends Component<Props> {
   }
 }
   
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-    padding: 10,
-  },
-  tableActive: {
-    width: '50%',
-    height: 50,
-    backgroundColor: '#48BBEC',
-    alignSelf: 'stretch',
-    marginTop: 10,
-    justifyContent: 'center',
-    alignContent: 'center'
-  },
-  table: {
-    width: '50%',
-    height: 50,
-    backgroundColor: '#FFF',
-    alignSelf: 'stretch',
-    marginTop: 10,
-    justifyContent: 'center',
-    alignContent: 'center',
-    borderColor: '#48BBEC',
-    borderWidth: 1,
-  },
-  tableTextActive: {
-    fontSize: 18,
-    color: '#FFF',
-    alignSelf: 'center',
-  },
-  tableText: {
-    fontSize: 18,
-    color: '#48BBEC',
-    alignSelf: 'center',
-  },
-  feed: {
-    padding : 5,
-    flex:1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderColor: '#D7D7D7',
-    borderBottomWidth: 1,
-  },
-  feedText: {
-    fontSize: 18,
-    color: '#000',
-    paddingBottom: 5,
-  },
-  button: {
-    backgroundColor: '#48BBEC',
-    alignSelf: 'stretch',
-    justifyContent: 'space-evenly',
-    borderRadius: 30,
-    margin: 5,
-  },
-  buttonText: {
-    alignSelf: 'stretch',
-    fontSize: 18,
-    color: '#FFF',
-    padding: 10,
-    alignItems: 'center',
-  },
-  page: {
-    alignSelf: 'center',
-    fontSize: 15,
-    padding: 5,
-    width: '30%'
-  },
-  genre: {
-    fontSize: 13,
-    color: '#999',
-  }
-});

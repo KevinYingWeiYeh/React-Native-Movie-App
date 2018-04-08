@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import {
-  StyleSheet,
   Text,
   View,
   TouchableHighlight,
@@ -8,6 +7,8 @@ import {
   Modal,
 } from 'react-native';
 import { Icon } from 'native-base';
+import styles from './styles.js'
+
 
 export default class Post extends Component<Props> {
   constructor(props){
@@ -48,7 +49,7 @@ export default class Post extends Component<Props> {
 						{item.title}
 						</Text>
 						<Text style={styles.titleText}>
-							Voter Rate: {item.vote_average === 0 ? 'Not open to rate yet' : item.vote_average}
+							Voter Rate: {item.vote_average === 0 ? 'TBA' : item.vote_average}
 						</Text>
 						<Text style={styles.titleText}>
 							Relese Date: {item.release_date}
@@ -68,56 +69,3 @@ export default class Post extends Component<Props> {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-    padding: 10,
-  },
-  feed: {
-    padding : 5,
-    flex:1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderColor: '#D7D7D7',
-    borderBottomWidth: 1,
-  },
-  titleHeadLine: {
-  	fontSize: 20,
-  	fontWeight: 'bold',
-    color: '#000',
-    padding: 10,
-    textAlign: 'center',	
-  },
-  titleText:{
-  	fontSize: 18,
-    color: '#000',
-    padding: 5,
-    textAlign: 'center',
-  },
-  feedText: {
-    fontSize: 18,
-    color: '#000',
-    padding: 5,
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    width: '100%',
-  },
-  button: {
-    backgroundColor: '#48BBEC',
-    alignSelf: 'stretch',
-    justifyContent: 'space-evenly',
-    borderRadius: 30,
-    margin: 5,
-  },
-  buttonText: {
-    fontSize: 18,
-    color: '#FFF',
-    padding: 10,
-    alignItems: 'stretch',
-    alignSelf: 'center',
-  },
-});
