@@ -68,19 +68,25 @@ export default class App extends Component<Props> {
     return fetch(url + page)
       .then((response) => response.json())
       .then((responseJson) => {
-        if(this.state.isPlayingPressed) {
+          if(!this.state.playingTotalPage && this.state.isPlayingPressed) {
+            this.setState({
+              isLoading: false,
+              dataSource: this.state.dataSource
+                .cloneWithRows(responseJson.results),
+              playingTotalPage: responseJson.total_pages
+            })
+          } else if(!this.state.upcomingTotalPage && !this.state.isPlayingPressed) {
+            this.setState({
+              isLoading: false,
+              dataSource: this.state.dataSource
+                .cloneWithRows(responseJson.results),
+              upcomingTotalPage: responseJson.total_pages
+            })
+          } else {
           this.setState({
             isLoading: false,
             dataSource: this.state.dataSource
               .cloneWithRows(responseJson.results),
-            playingTotalPage: responseJson.total_pages
-          })
-        } else {
-          this.setState({
-            isLoading: false,
-            dataSource: this.state.dataSource
-              .cloneWithRows(responseJson.results),
-            upcomingTotalPage: responseJson.total_pages
           })
         }
       })
@@ -117,7 +123,7 @@ export default class App extends Component<Props> {
   }
 
   renderRow(item) {
-    const genre = item.genre_ids ? item.genre_ids.map(ele => this.state.genres[ele]).join(', ') : ''
+    const genre = item.genre_ids && this.state.genres ? item.genre_ids.map(ele => this.state.genres[ele]).join(', ') : ''
     return (
       <TouchableHighlight 
             onPress={this.pressRow.bind(this,item)}
@@ -145,7 +151,7 @@ export default class App extends Component<Props> {
   render() {
     if(this.state.isOffLine) {
       return (
-        <View style={{flex:1,justifyContent: 'center'}}>
+        <View style={{flex:1,justifyContent: 'center', textAlign: 'center'}}>
           <Text> Unable to connect internet </Text>
         </View>
         )
@@ -180,10 +186,14 @@ export default class App extends Component<Props> {
             </Text>
           </TouchableHighlight>
         </View>
-        <ListView
-          style={{marginTop:5}}
-          dataSource={this.state.dataSource}
-          renderRow={this.renderRow.bind(this)} />
+        {
+          this.state.dataSource.length === 0 
+          ? <Text style={{textAlign: 'center'}}>This page is empity</Text>
+          : <ListView
+              style={{marginTop:5}}
+              dataSource={this.state.dataSource}
+              renderRow={this.renderRow.bind(this)} />
+        }
         <View style={{flexDirection:'row', flexWrap:'wrap', borderColor: '#EEE', borderTopWidth: 1}}>
           <TouchableHighlight
             style={styles.button}
